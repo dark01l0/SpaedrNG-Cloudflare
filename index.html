@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SpaedrNG Cloudflare Setup</title>
+  <style>
+    :root{--bg:#07080c;--card:#11131a;--line:#292d38;--red:#e50914;--text:#f5f5f5;--muted:#9ca3af}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#1a0b0d,#07080c 45%);color:var(--text);font-family:Arial,sans-serif;min-height:100vh;padding:28px}
+    .wrap{max-width:650px;margin:auto}.logo{font-size:30px;font-weight:900;text-align:center;margin:15px 0 6px}.sub{text-align:center;color:var(--muted);margin-bottom:25px}
+    .card{background:rgba(17,19,26,.94);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 18px 60px #0008}
+    label{display:block;margin:15px 0 7px;font-weight:700}input{width:100%;padding:13px;border-radius:11px;border:1px solid var(--line);background:#0b0d12;color:#fff;outline:0}input:focus{border-color:var(--red)}
+    button{width:100%;padding:14px;border:0;border-radius:11px;background:var(--red);color:#fff;font-weight:800;font-size:16px;margin-top:20px;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
+    .hint{font-size:12px;color:var(--muted);line-height:1.8;margin-top:15px}.status{display:none;margin-top:18px;padding:13px;border-radius:11px;background:#0b0d12;border:1px solid var(--line);white-space:pre-wrap;line-height:1.8}
+    .ok{border-color:#26734d}.err{border-color:#8d252c}.result{display:none;margin-top:18px;padding:15px;border-radius:12px;background:#0b0d12}.result a{color:#ff5962;word-break:break-all}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">🕷️ SpaedrNG</div>
+  <div class="sub">Cloudflare Panel Builder — v1</div>
+  <div class="card">
+    <label>ایمیل Cloudflare</label>
+    <input id="email" type="email" placeholder="example@gmail.com" autocomplete="off">
+
+    <label>Cloudflare Account ID</label>
+    <input id="accountId" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+
+    <label>Cloudflare API Token</label>
+    <input id="token" type="password" placeholder="••••••••••••••••" autocomplete="off">
+
+    <label>نام Worker</label>
+    <input id="workerName" value="spaedrng-panel" placeholder="spaedrng-panel">
+
+    <button id="build">ساخت Worker + D1 + KV</button>
+
+    <div id="status" class="status"></div>
+    <div id="result" class="result"></div>
+
+    <div class="hint">
+      توکن در فایل GitHub ذخیره نمی‌شود و فقط برای درخواست همین صفحه استفاده می‌شود.
+      برای امنیت، API Token را با حداقل دسترسی لازم بسازید و بعد از پایان کار در صورت نیاز آن را حذف/تعویض کنید.
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const statusBox = $("status"), resultBox = $("result");
+
+function msg(text, type="") {
+  statusBox.style.display = "block";
+  statusBox.className = "status " + type;
+  statusBox.textContent = text;
+}
+function slug(s) {
+  return s.toLowerCase().replace(/[^a-z0-9-]/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"").slice(0,50) || "spaedrng-panel";
+}
+async function cf(url, token, options={}) {
+  const r = await fetch("https://api.cloudflare.com/client/v4" + url, {
+    ...options,
+    headers: {"Authorization":"Bearer "+token, "Content-Type":"application/json", ...(options.headers||{})}
+  });
+  const data = await r.json().catch(()=>({success:false,errors:[{message:"Invalid JSON response"}]}));
+  if (!r.ok || data.success === false) {
+    const e = (data.errors||[]).map(x=>x.message).join("; ") || ("HTTP "+r.status);
+    throw new Error(e);
+  }
+  return data;
+}
+async function workerScript(accountId, name, token) {
+  const template = await fetch("worker-template.js").then(r=>r.text());
+  const metadata = {
+    body_part:"script",
+    bindings:[]
+  };
+  const form = new FormData();
+  form.append("metadata", new Blob([JSON.stringify(metadata)], {type:"application/json"}));
+  form.append("script", new Blob([template], {type:"application/javascript"}), "worker.js");
+
+  const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${encodeURIComponent(name)}`, {
+    method:"PUT",
+    headers:{Authorization:"Bearer "+token},
+    body:form
+  });
+  const data = await r.json().catch(()=>({success:false,errors:[{message:"Invalid JSON response"}]}));
+  if(!r.ok || data.success===false) throw new Error((data.errors||[]).map(x=>x.message).join("; ")||("Worker upload HTTP "+r.status));
+  return data;
+}
+$("build").onclick = async () => {
+  const email = $("email").value.trim();
+  const accountId = $("accountId").value.trim();
+  const token = $("token").value.trim();
+  const name = slug($("workerName").value);
+
+  if(!email || !accountId || !token) return msg("ایمیل، Account ID و API Token را وارد کنید.","err");
+
+  $("build").disabled = true; resultBox.style.display="none";
+  try {
+    msg("۱/۳ — بررسی دسترسی Cloudflare...");
+    await cf(`/accounts/${accountId}`, token);
+
+    msg("۲/۳ — ساخت D1...");
+    let d1;
+    try {
+      d1 = await cf(`/accounts/${accountId}/d1/database`, token, {
+        method:"POST", body:JSON.stringify({name:`${name}-db`})
+      });
+    } catch(e) {
+      if(/already exists|already been taken|duplicate/i.test(e.message)) {
+        const list = await cf(`/accounts/${accountId}/d1/database?per_page=100`, token);
+        const found = (list.result||[]).find(x=>x.name===`${name}-db`);
+        if(!found) throw e;
+        d1 = {result:found};
+      } else throw e;
+    }
+
+    msg("۳/۳ — ساخت KV و Worker...");
+    let kv;
+    try {
+      kv = await cf(`/accounts/${accountId}/storage/kv/namespaces`, token, {
+        method:"POST", body:JSON.stringify({title:`${name}-kv`})
+      });
+    } catch(e) {
+      if(/already exists|already been taken|duplicate/i.test(e.message)) {
+        const list = await cf(`/accounts/${accountId}/storage/kv/namespaces?per_page=100`, token);
+        const found = (list.result||[]).find(x=>x.title===`${name}-kv`);
+        if(!found) throw e;
+        kv = {result:found};
+      } else throw e;
+    }
+
+    await workerScript(accountId, name, token);
+
+    const workerUrl = `https://${name}.${accountId}.workers.dev`;
+    msg("ساخت اولیه با موفقیت انجام شد.","ok");
+    resultBox.style.display="block";
+    resultBox.innerHTML = `<b>Worker:</b> ${name}<br><b>D1 ID:</b> ${d1.result?.uuid||"—"}<br><b>KV ID:</b> ${kv.result?.id||"—"}<br><br><b>آدرس احتمالی Worker:</b><br><a href="${workerUrl}" target="_blank" rel="noopener">${workerUrl}</a><br><br><small>اگر workers.dev برای حساب فعال نباشد یا دامنه سفارشی استفاده شود، آدرس نهایی را از Cloudflare Dashboard ببینید.</small>`;
+  } catch(e) {
+    msg("خطا:\n"+e.message,"err");
+  } finally {
+    $("build").disabled = false;
+  }
+};
+</script>
+</body>
+</html>
