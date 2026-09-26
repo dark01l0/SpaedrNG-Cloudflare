@@ -98,12 +98,16 @@
       color: white;
       outline: none;
       margin-bottom: 16px;
-      direction: ltr;
     }
 
     input:focus {
       border-color: var(--red);
       box-shadow: 0 0 0 2px rgba(229,9,20,.12);
+    }
+
+    .ltr {
+      direction: ltr;
+      text-align: left;
     }
 
     .token-box {
@@ -227,6 +231,7 @@
 <div class="container">
 
   <div class="header">
+
     <div class="logo">🕷️</div>
 
     <div class="title">
@@ -236,7 +241,9 @@
     <div class="subtitle">
       ساخت خودکار پنل Cloudflare
     </div>
+
   </div>
+
 
   <div class="card">
 
@@ -244,7 +251,10 @@
       🚀 ساخت پنل جدید
     </div>
 
-    <label>ایمیل Cloudflare</label>
+
+    <label>
+      ایمیل Cloudflare
+    </label>
 
     <input
       id="email"
@@ -253,7 +263,23 @@
       autocomplete="email"
     >
 
-    <label>Cloudflare API Token</label>
+
+    <label>
+      Cloudflare Account ID
+    </label>
+
+    <input
+      id="accountId"
+      class="ltr"
+      type="text"
+      placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      autocomplete="off"
+    >
+
+
+    <label>
+      Cloudflare API Token
+    </label>
 
     <div class="token-box">
 
@@ -274,16 +300,20 @@
 
     </div>
 
-    <label>نام پروژه</label>
+
+    <label>
+      نام پروژه
+    </label>
 
     <input
       id="project"
+      class="ltr"
       type="text"
       placeholder="spaedrng-panel"
       value="spaedrng-panel"
       maxlength="50"
-      dir="ltr"
     >
+
 
     <button
       id="buildBtn"
@@ -293,33 +323,106 @@
       🚀 ساخت Worker + D1 + KV
     </button>
 
-    <div id="status" class="status"></div>
 
-    <div id="result" class="result">
+    <div
+      id="status"
+      class="status"
+    ></div>
+
+
+    <div
+      id="result"
+      class="result"
+    >
 
       <div class="section-title">
         ✅ ساخته شد
       </div>
 
-      <div class="result-item">
-        <div class="result-label">Worker</div>
-        <div id="workerName" class="result-value"></div>
-      </div>
 
       <div class="result-item">
-        <div class="result-label">Worker URL</div>
-        <div id="workerUrl" class="result-value"></div>
+
+        <div class="result-label">
+          Worker
+        </div>
+
+        <div
+          id="workerName"
+          class="result-value"
+        ></div>
+
       </div>
 
-      <div class="result-item">
-        <div class="result-label">D1 Database</div>
-        <div id="d1Name" class="result-value"></div>
-      </div>
 
       <div class="result-item">
-        <div class="result-label">KV Namespace</div>
-        <div id="kvName" class="result-value"></div>
+
+        <div class="result-label">
+          Worker URL
+        </div>
+
+        <div
+          id="workerUrl"
+          class="result-value"
+        ></div>
+
       </div>
+
+
+      <div class="result-item">
+
+        <div class="result-label">
+          D1 Database
+        </div>
+
+        <div
+          id="d1Name"
+          class="result-value"
+        ></div>
+
+      </div>
+
+
+      <div class="result-item">
+
+        <div class="result-label">
+          D1 ID
+        </div>
+
+        <div
+          id="d1Id"
+          class="result-value"
+        ></div>
+
+      </div>
+
+
+      <div class="result-item">
+
+        <div class="result-label">
+          KV Namespace
+        </div>
+
+        <div
+          id="kvName"
+          class="result-value"
+        ></div>
+
+      </div>
+
+
+      <div class="result-item">
+
+        <div class="result-label">
+          KV ID
+        </div>
+
+        <div
+          id="kvId"
+          class="result-value"
+        ></div>
+
+      </div>
+
 
       <button
         class="copy"
@@ -332,25 +435,35 @@
 
   </div>
 
+
   <div class="note">
-    🔒 API Token فقط برای درخواست ساخت استفاده می‌شود
-    و در این صفحه ذخیره نمی‌شود.
+
+    🔒 API Token در این صفحه ذخیره نمی‌شود.
+
     <br>
-    توکن خود را در GitHub یا برای دیگران منتشر نکن.
+
+    ⚠️ API Token خود را در GitHub یا برای دیگران منتشر نکن.
+
   </div>
 
+
   <div class="footer">
+
     SpaedrNG
+
     <br>
+
     <a
       href="https://t.me/spaedrNG"
       target="_blank"
     >
       کانال تلگرام
     </a>
+
   </div>
 
 </div>
+
 
 <script>
 
@@ -376,18 +489,8 @@ function showStatus(message) {
     document.getElementById("status");
 
   box.style.display = "block";
+
   box.textContent = message;
-}
-
-
-function escapeHtml(value) {
-
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
 
 
@@ -398,18 +501,28 @@ async function buildPanel() {
       .value
       .trim();
 
+
+  const accountId =
+    document.getElementById("accountId")
+      .value
+      .trim();
+
+
   const token =
     document.getElementById("token")
       .value
       .trim();
+
 
   const project =
     document.getElementById("project")
       .value
       .trim();
 
+
   const button =
     document.getElementById("buildBtn");
+
 
   const result =
     document.getElementById("result");
@@ -419,6 +532,16 @@ async function buildPanel() {
 
     showStatus(
       "❌ ایمیل Cloudflare را وارد کنید."
+    );
+
+    return;
+  }
+
+
+  if (!accountId) {
+
+    showStatus(
+      "❌ Cloudflare Account ID را وارد کنید."
     );
 
     return;
@@ -449,6 +572,7 @@ async function buildPanel() {
 
   result.style.display = "none";
 
+
   showStatus(
     "⏳ در حال اتصال به Cloudflare...\n\n" +
     "لطفاً صفحه را نبندید."
@@ -458,30 +582,38 @@ async function buildPanel() {
   try {
 
     const response =
-      await fetch(PROVISIONER, {
+      await fetch(
+        PROVISIONER,
+        {
 
-        method: "POST",
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json"
-        },
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
 
-        body: JSON.stringify({
+          body: JSON.stringify({
 
-          email,
-          token,
-          project
+            email,
+            accountId,
+            token,
+            project
 
-        })
+          })
 
-      });
+        }
+      );
 
 
     const data =
       await response.json();
 
 
-    if (!response.ok || !data.ok) {
+    if (
+      !response.ok ||
+      !data.ok
+    ) {
 
       throw new Error(
         data.error ||
@@ -510,9 +642,21 @@ async function buildPanel() {
 
 
     document.getElementById(
+      "d1Id"
+    ).textContent =
+      data.d1?.id || "-";
+
+
+    document.getElementById(
       "kvName"
     ).textContent =
       data.kv?.title || "-";
+
+
+    document.getElementById(
+      "kvId"
+    ).textContent =
+      data.kv?.id || "-";
 
 
     result.style.display =
@@ -524,7 +668,8 @@ async function buildPanel() {
     );
 
 
-    window.__lastResult = data;
+    window.__lastResult =
+      data;
 
 
   } catch (error) {
@@ -548,7 +693,10 @@ async function copyResult() {
   const data =
     window.__lastResult;
 
-  if (!data) return;
+
+  if (!data) {
+    return;
+  }
 
 
   const text = [
@@ -566,15 +714,23 @@ async function copyResult() {
     "D1: " +
       (data.d1?.name || "-"),
 
+    "D1 ID: " +
+      (data.d1?.id || "-"),
+
     "KV: " +
-      (data.kv?.title || "-")
+      (data.kv?.title || "-"),
+
+    "KV ID: " +
+      (data.kv?.id || "-")
 
   ].join("\n");
 
 
   try {
 
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(
+      text
+    );
 
     showStatus(
       "✅ اطلاعات کپی شد."
@@ -582,9 +738,7 @@ async function copyResult() {
 
   } catch {
 
-    showStatus(
-      text
-    );
+    showStatus(text);
 
   }
 
