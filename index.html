@@ -7,22 +7,36 @@
   <title>SpaedrNG Cloudflare Builder</title>
 
   <style>
+    :root {
+      --red: #e50914;
+      --red2: #ff3340;
+      --bg: #07080c;
+      --card: #11131a;
+      --card2: #171a23;
+      --text: #f5f5f5;
+      --muted: #8e94a3;
+      --line: #272b36;
+      --green: #22c55e;
+    }
+
     * {
       box-sizing: border-box;
+      font-family: Tahoma, Arial, sans-serif;
     }
 
     body {
       margin: 0;
       min-height: 100vh;
       background:
-        radial-gradient(circle at top, #26090d 0%, #0b0b0e 35%, #050507 100%);
-      color: #fff;
-      font-family: Tahoma, Arial, sans-serif;
+        radial-gradient(circle at top, #240005 0%, transparent 35%),
+        var(--bg);
+      color: var(--text);
     }
 
     .container {
-      width: min(600px, calc(100% - 30px));
-      margin: 40px auto;
+      width: min(92%, 560px);
+      margin: auto;
+      padding: 35px 0;
     }
 
     .header {
@@ -31,32 +45,35 @@
     }
 
     .logo {
-      font-size: 42px;
+      font-size: 55px;
       margin-bottom: 5px;
     }
 
     .title {
       font-size: 28px;
-      font-weight: 900;
-      color: #fff;
+      font-weight: bold;
     }
 
     .title span {
-      color: #e50914;
+      color: var(--red2);
     }
 
     .subtitle {
-      color: #9297a3;
+      color: var(--muted);
       margin-top: 8px;
       font-size: 14px;
     }
 
     .card {
-      background: rgba(17, 18, 24, 0.96);
-      border: 1px solid #2b2d35;
-      border-radius: 22px;
-      padding: 25px;
-      box-shadow: 0 20px 70px rgba(0,0,0,.55);
+      background: linear-gradient(
+        145deg,
+        rgba(23,26,35,.97),
+        rgba(12,14,20,.97)
+      );
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 15px 50px rgba(0,0,0,.35);
     }
 
     .section-title {
@@ -67,26 +84,25 @@
 
     label {
       display: block;
-      margin: 15px 0 8px;
-      font-size: 14px;
-      color: #e7e7e7;
+      color: #c7cad3;
+      font-size: 13px;
+      margin-bottom: 8px;
     }
 
     input {
       width: 100%;
       padding: 14px;
-      background: #090a0e;
-      border: 1px solid #30333d;
-      color: #fff;
-      border-radius: 13px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #0b0d12;
+      color: white;
       outline: none;
-      font-size: 14px;
+      margin-bottom: 16px;
       direction: ltr;
-      text-align: left;
     }
 
     input:focus {
-      border-color: #e50914;
+      border-color: var(--red);
       box-shadow: 0 0 0 2px rgba(229,9,20,.12);
     }
 
@@ -94,137 +110,114 @@
       position: relative;
     }
 
+    .token-box input {
+      padding-left: 55px;
+    }
+
     .show-token {
       position: absolute;
       left: 10px;
       top: 9px;
-      width: auto;
-      margin: 0;
-      padding: 7px 10px;
-      font-size: 12px;
-      background: #20232b;
+      border: 0;
+      background: var(--card2);
       color: #ddd;
+      border-radius: 9px;
+      padding: 8px 10px;
+      cursor: pointer;
     }
 
-    .build-btn {
+    .build {
       width: 100%;
       border: 0;
-      border-radius: 14px;
+      border-radius: 13px;
       padding: 15px;
-      margin-top: 24px;
-      background: linear-gradient(135deg, #e50914, #9f0008);
+      background: linear-gradient(
+        135deg,
+        var(--red),
+        var(--red2)
+      );
       color: white;
       font-size: 16px;
-      font-weight: 900;
+      font-weight: bold;
       cursor: pointer;
-      transition: .2s;
+      margin-top: 5px;
     }
 
-    .build-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 30px rgba(229,9,20,.25);
-    }
-
-    .build-btn:disabled {
+    .build:disabled {
       opacity: .6;
       cursor: wait;
-      transform: none;
     }
 
     .status {
-      display: none;
       margin-top: 18px;
-      padding: 15px;
-      border-radius: 14px;
-      line-height: 2;
-      font-size: 14px;
+      padding: 13px;
+      border-radius: 12px;
+      background: #0b0d12;
+      border: 1px solid var(--line);
+      color: #c9ccd5;
+      font-size: 13px;
+      display: none;
       white-space: pre-wrap;
-    }
-
-    .loading {
-      display: block;
-      background: #151820;
-      border: 1px solid #30343e;
-      color: #ddd;
-    }
-
-    .success {
-      display: block;
-      background: rgba(20,110,70,.12);
-      border: 1px solid #176b48;
-    }
-
-    .error {
-      display: block;
-      background: rgba(160,20,30,.12);
-      border: 1px solid #7d2028;
-      color: #ff858c;
+      word-break: break-word;
     }
 
     .result {
-      display: none;
       margin-top: 18px;
-      padding: 17px;
-      border-radius: 15px;
+      display: none;
+    }
+
+    .result-item {
       background: #0b0d12;
-      border: 1px solid #292d37;
-    }
-
-    .result-row {
-      padding: 9px 0;
-      border-bottom: 1px solid #20232b;
-    }
-
-    .result-row:last-child {
-      border-bottom: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px;
+      margin-top: 9px;
     }
 
     .result-label {
-      color: #969ba7;
+      color: var(--muted);
       font-size: 12px;
+      margin-bottom: 5px;
     }
 
     .result-value {
-      margin-top: 4px;
-      word-break: break-all;
       direction: ltr;
       text-align: left;
-      color: #fff;
+      word-break: break-all;
+      color: white;
+      font-size: 13px;
     }
 
-    .worker-link {
-      color: #ff4d58;
-      text-decoration: none;
-    }
-
-    .copy-btn {
+    .copy {
       width: 100%;
-      margin-top: 14px;
-      padding: 12px;
+      margin-top: 15px;
       border: 0;
-      border-radius: 11px;
-      background: #167c4b;
-      color: #fff;
+      border-radius: 12px;
+      padding: 13px;
+      background: var(--green);
+      color: white;
       font-weight: bold;
       cursor: pointer;
     }
 
-    .security {
-      margin-top: 20px;
-      padding: 14px;
-      background: #0b0d12;
-      border: 1px solid #252832;
-      border-radius: 13px;
-      color: #969ba7;
-      font-size: 12px;
-      line-height: 1.9;
+    .note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.8;
+      text-align: center;
     }
 
     .footer {
       text-align: center;
-      color: #686d78;
-      font-size: 11px;
+      color: var(--muted);
+      font-size: 12px;
       margin-top: 20px;
+    }
+
+    .footer a {
+      color: var(--red2);
+      text-decoration: none;
     }
   </style>
 </head>
@@ -237,46 +230,30 @@
     <div class="logo">🕷️</div>
 
     <div class="title">
-      <span>SpaedrNG</span>
-      Cloudflare
+      Ｓｐａｅｄｒ<span>ＮＧ</span>
     </div>
 
     <div class="subtitle">
-      ساخت خودکار Worker ،D1 و KV
+      ساخت خودکار پنل Cloudflare
     </div>
   </div>
 
   <div class="card">
 
     <div class="section-title">
-      ⚙️ ساخت پنل جدید
+      🚀 ساخت پنل جدید
     </div>
 
-    <label for="email">
-      ایمیل Cloudflare
-    </label>
+    <label>ایمیل Cloudflare</label>
 
     <input
       id="email"
       type="email"
       placeholder="example@gmail.com"
-      autocomplete="off"
+      autocomplete="email"
     >
 
-    <label for="accountId">
-      Cloudflare Account ID
-    </label>
-
-    <input
-      id="accountId"
-      type="text"
-      placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-      autocomplete="off"
-    >
-
-    <label for="token">
-      Cloudflare API Token
-    </label>
+    <label>Cloudflare API Token</label>
 
     <div class="token-box">
 
@@ -289,58 +266,88 @@
 
       <button
         class="show-token"
-        id="showToken"
         type="button"
+        onclick="toggleToken()"
       >
-        نمایش
+        👁️
       </button>
 
     </div>
 
-    <label for="workerName">
-      نام Worker
-    </label>
+    <label>نام پروژه</label>
 
     <input
-      id="workerName"
+      id="project"
       type="text"
-      value="spaedrng-panel"
       placeholder="spaedrng-panel"
-      autocomplete="off"
+      value="spaedrng-panel"
+      maxlength="50"
+      dir="ltr"
     >
 
     <button
-      class="build-btn"
-      id="build"
-      type="button"
+      id="buildBtn"
+      class="build"
+      onclick="buildPanel()"
     >
       🚀 ساخت Worker + D1 + KV
     </button>
 
-    <div
-      id="status"
-      class="status"
-    ></div>
+    <div id="status" class="status"></div>
 
-    <div
-      id="result"
-      class="result"
-    ></div>
+    <div id="result" class="result">
 
-    <div class="security">
+      <div class="section-title">
+        ✅ ساخته شد
+      </div>
 
-      🔐 <b>نکته امنیتی</b><br>
+      <div class="result-item">
+        <div class="result-label">Worker</div>
+        <div id="workerName" class="result-value"></div>
+      </div>
 
-      API Token در این فایل ذخیره نمی‌شود و داخل GitHub قرار نمی‌گیرد.
-      فقط هنگام درخواست ساخت منابع به Provisioner Worker ارسال می‌شود.
-      برای استفاده عمومی بهتر است در نسخه بعدی احراز هویت و محدودیت دسترسی اضافه شود.
+      <div class="result-item">
+        <div class="result-label">Worker URL</div>
+        <div id="workerUrl" class="result-value"></div>
+      </div>
+
+      <div class="result-item">
+        <div class="result-label">D1 Database</div>
+        <div id="d1Name" class="result-value"></div>
+      </div>
+
+      <div class="result-item">
+        <div class="result-label">KV Namespace</div>
+        <div id="kvName" class="result-value"></div>
+      </div>
+
+      <button
+        class="copy"
+        onclick="copyResult()"
+      >
+        📋 کپی اطلاعات
+      </button>
 
     </div>
 
   </div>
 
+  <div class="note">
+    🔒 API Token فقط برای درخواست ساخت استفاده می‌شود
+    و در این صفحه ذخیره نمی‌شود.
+    <br>
+    توکن خود را در GitHub یا برای دیگران منتشر نکن.
+  </div>
+
   <div class="footer">
-    SpaedrNG Cloudflare Builder — Version 1
+    SpaedrNG
+    <br>
+    <a
+      href="https://t.me/spaedrNG"
+      target="_blank"
+    >
+      کانال تلگرام
+    </a>
   </div>
 
 </div>
@@ -351,406 +358,235 @@ const PROVISIONER =
   "https://spaedrng-provisioner.prod-relay-2ffb0d.workers.dev/api/provision";
 
 
-const $ = id =>
-  document.getElementById(id);
+function toggleToken() {
+
+  const input =
+    document.getElementById("token");
+
+  input.type =
+    input.type === "password"
+      ? "text"
+      : "password";
+}
 
 
-function setStatus(message, type) {
+function showStatus(message) {
 
-  const box = $("status");
+  const box =
+    document.getElementById("status");
 
   box.style.display = "block";
-
-  box.className =
-    "status " + type;
-
   box.textContent = message;
-
 }
 
 
-function safeName(name) {
+function escapeHtml(value) {
 
-  return String(name || "spaedrng-panel")
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 50) || "spaedrng-panel";
-
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 
-/* نمایش / مخفی کردن Token */
-
-$("showToken").addEventListener("click", () => {
-
-  const input = $("token");
-
-  if (input.type === "password") {
-
-    input.type = "text";
-
-    $("showToken").textContent =
-      "مخفی";
-
-  } else {
-
-    input.type = "password";
-
-    $("showToken").textContent =
-      "نمایش";
-
-  }
-
-});
-
-
-/* ساخت منابع */
-
-$("build").addEventListener("click", async () => {
+async function buildPanel() {
 
   const email =
-    $("email").value.trim();
-
-  const accountId =
-    $("accountId").value.trim();
+    document.getElementById("email")
+      .value
+      .trim();
 
   const token =
-    $("token").value.trim();
+    document.getElementById("token")
+      .value
+      .trim();
 
   const project =
-    safeName(
-      $("workerName").value.trim()
-    );
+    document.getElementById("project")
+      .value
+      .trim();
 
+  const button =
+    document.getElementById("buildBtn");
 
-  $("result").style.display = "none";
+  const result =
+    document.getElementById("result");
 
 
   if (!email) {
 
-    setStatus(
-      "❌ ایمیل Cloudflare را وارد کنید.",
-      "error"
+    showStatus(
+      "❌ ایمیل Cloudflare را وارد کنید."
     );
 
     return;
-
-  }
-
-
-  if (!accountId) {
-
-    setStatus(
-      "❌ Cloudflare Account ID را وارد کنید.",
-      "error"
-    );
-
-    return;
-
   }
 
 
   if (!token) {
 
-    setStatus(
-      "❌ Cloudflare API Token را وارد کنید.",
-      "error"
+    showStatus(
+      "❌ Cloudflare API Token را وارد کنید."
     );
 
     return;
-
   }
 
 
   if (!project) {
 
-    setStatus(
-      "❌ نام Worker را وارد کنید.",
-      "error"
+    showStatus(
+      "❌ نام پروژه را وارد کنید."
     );
 
     return;
-
   }
 
 
-  const button =
-    $("build");
-
   button.disabled = true;
 
-  button.textContent =
-    "⏳ در حال ساخت...";
+  result.style.display = "none";
 
-
-  setStatus(
-    "در حال ارسال درخواست به Cloudflare...\nلطفاً صفحه را نبندید.",
-    "loading"
+  showStatus(
+    "⏳ در حال اتصال به Cloudflare...\n\n" +
+    "لطفاً صفحه را نبندید."
   );
 
 
   try {
 
     const response =
-      await fetch(
-        PROVISIONER,
-        {
-          method: "POST",
+      await fetch(PROVISIONER, {
 
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
+        method: "POST",
 
-          body: JSON.stringify({
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-            email:
-              email,
+        body: JSON.stringify({
 
-            accountId:
-              accountId,
+          email,
+          token,
+          project
 
-            token:
-              token,
+        })
 
-            project:
-              project
-
-          })
-
-        }
-      );
+      });
 
 
     const data =
       await response.json();
 
 
-    if (!response.ok ||
-        !data.ok) {
+    if (!response.ok || !data.ok) {
 
       throw new Error(
         data.error ||
-        "ساخت منابع انجام نشد."
+        "ساخت پنل ناموفق بود."
       );
 
     }
 
 
-    setStatus(
-      "✅ ساخت با موفقیت انجام شد.",
-      "success"
-    );
+    document.getElementById(
+      "workerName"
+    ).textContent =
+      data.worker?.name || "-";
 
 
-    const workerName =
-      data.worker?.name ||
-      "—";
-
-    const workerUrl =
-      data.worker?.url ||
-      "—";
-
-    const d1Name =
-      data.d1?.name ||
-      "—";
-
-    const d1Id =
-      data.d1?.id ||
-      "—";
-
-    const kvName =
-      data.kv?.title ||
-      "—";
-
-    const kvId =
-      data.kv?.id ||
-      "—";
+    document.getElementById(
+      "workerUrl"
+    ).textContent =
+      data.worker?.url || "-";
 
 
-    $("result").innerHTML = `
-
-      <div class="result-row">
-
-        <div class="result-label">
-          Worker
-        </div>
-
-        <div class="result-value">
-          ${escapeHtml(workerName)}
-        </div>
-
-      </div>
+    document.getElementById(
+      "d1Name"
+    ).textContent =
+      data.d1?.name || "-";
 
 
-      <div class="result-row">
-
-        <div class="result-label">
-          Worker URL
-        </div>
-
-        <div class="result-value">
-
-          <a
-            class="worker-link"
-            href="${escapeAttribute(workerUrl)}"
-            target="_blank"
-            rel="noopener"
-          >
-            ${escapeHtml(workerUrl)}
-          </a>
-
-        </div>
-
-      </div>
+    document.getElementById(
+      "kvName"
+    ).textContent =
+      data.kv?.title || "-";
 
 
-      <div class="result-row">
-
-        <div class="result-label">
-          D1
-        </div>
-
-        <div class="result-value">
-          ${escapeHtml(d1Name)}
-        </div>
-
-      </div>
-
-
-      <div class="result-row">
-
-        <div class="result-label">
-          D1 ID
-        </div>
-
-        <div class="result-value">
-          ${escapeHtml(d1Id)}
-        </div>
-
-      </div>
-
-
-      <div class="result-row">
-
-        <div class="result-label">
-          KV
-        </div>
-
-        <div class="result-value">
-          ${escapeHtml(kvName)}
-        </div>
-
-      </div>
-
-
-      <div class="result-row">
-
-        <div class="result-label">
-          KV ID
-        </div>
-
-        <div class="result-value">
-          ${escapeHtml(kvId)}
-        </div>
-
-      </div>
-
-
-      <button
-        class="copy-btn"
-        id="copyResult"
-        type="button"
-      >
-        📋 کپی اطلاعات
-      </button>
-
-    `;
-
-
-    $("result").style.display =
+    result.style.display =
       "block";
 
 
-    $("copyResult").onclick =
-      async () => {
-
-        const text =
-
-`SpaedrNG
-
-Worker: ${workerName}
-Worker URL: ${workerUrl}
-
-D1: ${d1Name}
-D1 ID: ${d1Id}
-
-KV: ${kvName}
-KV ID: ${kvId}`;
+    showStatus(
+      "✅ Worker، D1 و KV با موفقیت ساخته شدند."
+    );
 
 
-        try {
-
-          await navigator.clipboard
-            .writeText(text);
-
-          $("copyResult")
-            .textContent =
-            "✅ کپی شد";
-
-        } catch {
-
-          $("copyResult")
-            .textContent =
-            "❌ کپی انجام نشد";
-
-        }
-
-      };
+    window.__lastResult = data;
 
 
   } catch (error) {
 
-    setStatus(
-      "❌ خطا:\n" +
-      (error.message ||
-       "خطای ناشناخته"),
-      "error"
+    showStatus(
+      "❌ خطا:\n\n" +
+      error.message
     );
 
   } finally {
 
     button.disabled = false;
 
-    button.textContent =
-      "🚀 ساخت Worker + D1 + KV";
-
   }
-
-});
-
-
-function escapeHtml(value) {
-
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 
 }
 
 
-function escapeAttribute(value) {
+async function copyResult() {
 
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+  const data =
+    window.__lastResult;
+
+  if (!data) return;
+
+
+  const text = [
+
+    "SpaedrNG",
+
+    "",
+
+    "Worker: " +
+      (data.worker?.name || "-"),
+
+    "Worker URL: " +
+      (data.worker?.url || "-"),
+
+    "D1: " +
+      (data.d1?.name || "-"),
+
+    "KV: " +
+      (data.kv?.title || "-")
+
+  ].join("\n");
+
+
+  try {
+
+    await navigator.clipboard.writeText(text);
+
+    showStatus(
+      "✅ اطلاعات کپی شد."
+    );
+
+  } catch {
+
+    showStatus(
+      text
+    );
+
+  }
 
 }
 
